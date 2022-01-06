@@ -1,0 +1,296 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Media;
+
+namespace Pong
+{
+    public partial class Main : Form
+    {
+        public Main()
+        {
+            InitializeComponent();
+        }
+        private int LocMouse;
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Y >= (pictureBox1.Location.Y + rab.RightBita.Height / 2 - rab.RightBita.DY) && e.Y <= (pictureBox1.Location.Y + pictureBox1.Height - rab.RightBita.Height / 2 + rab.RightBita.DY))
+            {
+                LocMouse = e.Y - pictureBox1.Location.Y;
+            }
+        }
+        private void StartStopButton_Click(object sender, EventArgs e)
+        {
+            SchotLabel.Visible = true;
+            if (StartStopButton.Text == "Старт")
+            {
+                StartStopButton.Text = "Стоп";
+                ConfigButton.Enabled = false;
+
+                pictureBox1.Refresh();
+                Graphics g = pictureBox1.CreateGraphics();
+                g.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.White), new System.Drawing.Rectangle(0, 0, pictureBox1.Width, pictureBox1.Height));
+                Pen myPen = new Pen(Brushes.Black, 2);
+                g.DrawRectangle(myPen, new System.Drawing.Rectangle(0, 0, pictureBox1.Width, pictureBox1.Height));
+                //ворота
+                myPen = new Pen(Brushes.Black, 1);
+                g.DrawRectangle(myPen, new System.Drawing.Rectangle(0, pictureBox1.Height / 2 - rab.heightvorota / 2, 20, rab.heightvorota));
+                g.DrawRectangle(myPen, new System.Drawing.Rectangle(pictureBox1.Width - 20, pictureBox1.Height / 2 - rab.heightvorota / 2, 20, rab.heightvorota));
+                SchotLabel.Text = rab.schotleft.ToString() + ":" + rab.schotright.ToString();
+
+                TimerRab.Start();
+                TimerRightBita.Start();
+                TimerLeftBita.Start();
+            }
+            else
+            {
+                TimerRab.Stop();
+                TimerRightBita.Stop();
+                TimerLeftBita.Stop();
+                ConfigButton.Enabled = true;
+                StartStopButton.Text = "Старт";
+            }
+        }
+        private void TimerRab_Tick(object sender, EventArgs e)
+        {
+            rab.OtrisovkaBita(pictureBox1, rab.LeftBita.Posx, rab.LeftBita.Posy, rab.LeftBita.Width, rab.LeftBita.Height, false);
+
+            rab.OtrisovkaBita(pictureBox1, rab.RightBita.Posx, rab.RightBita.Posy, rab.RightBita.Width, rab.RightBita.Height, false);
+
+            if (rab.myShar.Posx + rab.myShar.Radius + rab.myShar.DX > pictureBox1.Width)
+            {
+                if ((rab.myShar.Posy - rab.myShar.Radius >= pictureBox1.Height / 2 - rab.heightvorota / 2) &&
+                    (rab.myShar.Posy + rab.myShar.Radius <= pictureBox1.Height / 2 + rab.heightvorota / 2))
+                {
+                    rab.schotleft++;
+                    SchotLabel.Text = rab.schotleft.ToString() + ":" + rab.schotright.ToString();
+
+                    rab.OtrisovkaShara(pictureBox1, rab.myShar.Posx, rab.myShar.Posy, rab.myShar.Radius, true);
+
+                    Random rnd = new Random();
+                    rab.myShar.Posx = rab.RightBita.Posx - rab.RightBita.Width / 2 - rab.myShar.Radius - 1;
+                    rab.myShar.Posy = rab.RightBita.Posy;
+                    //rab.myShar.DX = rab.myShar.Speed + rnd.Next(-5, 5);
+                    //rab.myShar.DY = rab.myShar.Speed + rnd.Next(-5, 5);
+                    if (rnd.Next(0, 1) == 1)
+                        rab.myShar.DY = -rab.myShar.Speed + rnd.Next(-5, 5);
+                    else
+                        rab.myShar.DY = rab.myShar.Speed + rnd.Next(-5, 5);
+                    if (rnd.Next(0, 1) == 1)
+                        rab.myShar.DX = -rab.myShar.Speed + rnd.Next(-5, 5);
+                    else
+                        rab.myShar.DX = rab.myShar.Speed + rnd.Next(-5, 5);
+                }
+
+                rab.myShar.DX = -rab.myShar.DX;
+            }
+            if (rab.myShar.Posx - rab.myShar.Radius + rab.myShar.DX < 0)
+            {
+                if ((rab.myShar.Posy - rab.myShar.Radius >= pictureBox1.Height / 2 - rab.heightvorota / 2) &&
+                    (rab.myShar.Posy + rab.myShar.Radius <= pictureBox1.Height / 2 + rab.heightvorota / 2))
+                {
+                    rab.schotright++;
+                    SchotLabel.Text = rab.schotleft.ToString() + ":" + rab.schotright.ToString();
+
+                    rab.OtrisovkaShara(pictureBox1, rab.myShar.Posx, rab.myShar.Posy, rab.myShar.Radius, true);
+
+                    Random rnd = new Random();
+                    int en = rnd.Next(-5, 5);
+                    rab.myShar.Posx = rab.LeftBita.Posx + rab.LeftBita.Width / 2 + rab.myShar.Radius + 1;
+                    rab.myShar.Posy = rab.LeftBita.Posy;
+                    if (rnd.Next(0, 1) == 1)
+                        rab.myShar.DY = -rab.myShar.Speed + rnd.Next(-5, 5);
+                    else
+                        rab.myShar.DY = rab.myShar.Speed + rnd.Next(-5, 5);
+                    if (rnd.Next(0, 1) == 1)
+                        rab.myShar.DX = -rab.myShar.Speed + rnd.Next(-5, 5);
+                    else
+                        rab.myShar.DX = rab.myShar.Speed + rnd.Next(-5, 5);
+                }
+
+                rab.myShar.DX = -rab.myShar.DX;
+            }
+            if (rab.myShar.Posy + rab.myShar.Radius + rab.myShar.DY > pictureBox1.Height)
+                rab.myShar.DY = -rab.myShar.DY;
+            if (rab.myShar.Posy - rab.myShar.Radius + rab.myShar.DY < 0)
+                rab.myShar.DY = -rab.myShar.DY;
+            rab.OtrisovkaShara(pictureBox1, rab.myShar.Posx, rab.myShar.Posy, rab.myShar.Radius, true);
+            rab.myShar.Posx += rab.myShar.DX;
+            rab.myShar.Posy += rab.myShar.DY;
+            rab.OtrisovkaShara(pictureBox1, rab.myShar.Posx, rab.myShar.Posy, rab.myShar.Radius, false);
+
+            //ПРОПИСАТЬ УДАРЫ О БИТЫ
+            switch (rab.UdarSharikaOBitu(rab.myShar, rab.LeftBita, true))
+            {
+                case "UdarOLevuyu":
+                    rab.myShar.DX = -rab.myShar.DX;
+                    break;
+                case "LeftUp":
+                    rab.myShar.DY = -rab.myShar.DY;
+                    break;
+                case "LeftDown":
+                    rab.myShar.DY = -rab.myShar.DY;
+                    break;
+            }
+            switch (rab.UdarSharikaOBitu(rab.myShar, rab.RightBita, false))
+            {
+                case "UdarOPravuyu":
+                    rab.myShar.DX = -rab.myShar.DX;
+                    break;
+                case "RightUp":
+                    rab.myShar.DY = -rab.myShar.DY;
+                    break;
+                case "RightDown":
+                    rab.myShar.DY = -rab.myShar.DY;
+                    break;
+            }
+
+            Graphics g = pictureBox1.CreateGraphics();
+            Pen myPen = new Pen(Brushes.Black, 2);
+            g.DrawRectangle(myPen, new System.Drawing.Rectangle(0, 0, pictureBox1.Width, pictureBox1.Height));
+            myPen = new Pen(Brushes.Black, 1);
+            g.DrawRectangle(myPen, new System.Drawing.Rectangle(0, pictureBox1.Height / 2 - rab.heightvorota / 2, 20, rab.heightvorota));
+            g.DrawRectangle(myPen, new System.Drawing.Rectangle(pictureBox1.Width - 20, pictureBox1.Height / 2 - rab.heightvorota / 2, 20, rab.heightvorota));
+
+            SchotLabel.Location = new Point(pictureBox1.Location.X + pictureBox1.Width / 2 - SchotLabel.Width / 2, pictureBox1.Location.Y);
+        }
+
+        private void TimerRightBita_Tick(object sender, EventArgs e)
+        {
+            if (LocMouse > rab.RightBita.Posy)
+            {
+                if (LocMouse - rab.RightBita.Posy >= 10)
+                {
+                    rab.OtrisovkaBita(pictureBox1, rab.RightBita.Posx, rab.RightBita.Posy, rab.RightBita.Width, rab.RightBita.Height, true);
+                    rab.RightBita.Posy += rab.RightBita.DY;
+                    rab.OtrisovkaBita(pictureBox1, rab.RightBita.Posx, rab.RightBita.Posy, rab.RightBita.Width, rab.RightBita.Height, false);
+                }
+            }
+            else
+            {
+                if (rab.RightBita.Posy - LocMouse >= 10)
+                {
+                    rab.OtrisovkaBita(pictureBox1, rab.RightBita.Posx, rab.RightBita.Posy, rab.RightBita.Width, rab.RightBita.Height, true);
+                    rab.RightBita.Posy -= rab.RightBita.DY;
+                    rab.OtrisovkaBita(pictureBox1, rab.RightBita.Posx, rab.RightBita.Posy, rab.RightBita.Width, rab.RightBita.Height, false);
+                }
+            }
+        }
+        private int CountPressesS = 0;
+        private int CountPressesW = 0;
+        private void Main_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (StartStopButton.Text == "Стоп")
+            {
+                if (Convert.ToInt32(e.KeyCode) == 83)
+                    CountPressesS++;
+                if (Convert.ToInt32(e.KeyCode) == 87)
+                    CountPressesW++;
+                if (CountPressesS > CountPressesW)
+                {
+                    CountPressesS -= CountPressesW;
+                    CountPressesW = 0;
+                }
+                else
+                if (CountPressesW > CountPressesS)
+                {
+                    CountPressesW -= CountPressesS;
+                    CountPressesS = 0;
+                }
+                else
+                {
+                    CountPressesW = 0;
+                    CountPressesS = 0;
+                }
+            }
+        }
+
+        private void TimerLeftBita_Tick(object sender, EventArgs e)
+        {
+            int PositionToMoveS = CountPressesS * rab.LeftBita.DY;
+            int PositionToMoveW = CountPressesW * rab.LeftBita.DY;
+            if(PositionToMoveS != 0)
+            {
+                if(PositionToMoveS > 0)
+                {
+                    if (rab.LeftBita.Posy + rab.LeftBita.Height / 2 >= 480)
+                    {
+                        CountPressesS = 0;
+                    }
+                    else
+                    {
+                        rab.OtrisovkaBita(pictureBox1, rab.LeftBita.Posx, rab.LeftBita.Posy, rab.LeftBita.Width, rab.LeftBita.Height, true);
+                        rab.LeftBita.Posy += rab.LeftBita.DY;
+                        PositionToMoveS -= rab.LeftBita.DY;
+                        CountPressesS -= 1;
+                        rab.OtrisovkaBita(pictureBox1, rab.LeftBita.Posx, rab.LeftBita.Posy, rab.LeftBita.Width, rab.LeftBita.Height, false);
+                    }
+                }
+            }
+            if (PositionToMoveW != 0)
+            {
+                if (PositionToMoveW > 0)
+                {
+                    if (rab.LeftBita.Posy - rab.LeftBita.Height / 2 <= 0)
+                    {
+                        CountPressesW = 0;
+                    }
+                    else
+                    {
+                        rab.OtrisovkaBita(pictureBox1, rab.LeftBita.Posx, rab.LeftBita.Posy, rab.LeftBita.Width, rab.LeftBita.Height, true);
+                        rab.LeftBita.Posy -= rab.LeftBita.DY;
+                        PositionToMoveW -= rab.LeftBita.DY;
+                        CountPressesW -= 1;
+                        rab.OtrisovkaBita(pictureBox1, rab.LeftBita.Posx, rab.LeftBita.Posy, rab.LeftBita.Width, rab.LeftBita.Height, false);
+                    }
+                }
+            }
+        }
+
+        private void Main_Load(object sender, EventArgs e)
+        {
+            SchotLabel.Location = new Point(pictureBox1.Location.X + pictureBox1.Width / 2 - SchotLabel.Width / 2, pictureBox1.Location.Y);
+
+            rab.heightvorota = 480;
+
+            rab.myShar.Speed = 7;
+            rab.myShar.Posx = 320;
+            rab.myShar.Posy = 240;
+            rab.myShar.DY = 6;
+            rab.myShar.DX = 6;
+            rab.myShar.Radius = 20;
+
+            rab.LeftBita.Width = 30;
+            rab.LeftBita.Height = 100;
+            rab.LeftBita.Posx = rab.LeftBita.Width / 2 + 1;
+            rab.LeftBita.Posy = pictureBox1.Height / 2;
+            rab.LeftBita.DY = 20;
+
+            rab.RightBita.Width = 30;
+            rab.RightBita.Height = 100;
+            rab.RightBita.Posx = pictureBox1.Width - rab.RightBita.Width / 2 - 1;
+            rab.RightBita.Posy = pictureBox1.Height / 2;
+            rab.RightBita.DY = 5;
+        }
+
+        private void ConfigButton_Click(object sender, EventArgs e)
+        {
+            Config cof = new Config();
+            cof.ShowDialog();
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Y >= (rab.RightBita.Height / 2 - rab.RightBita.DY) && e.Y <= (pictureBox1.Height - rab.RightBita.Height / 2 + rab.RightBita.DY))
+            {
+                LocMouse = e.Y;
+            }
+        }
+    }
+}
